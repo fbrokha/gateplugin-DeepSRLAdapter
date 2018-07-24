@@ -1,0 +1,5 @@
+<!-- creole.xml DeepSRLAdapter -->
+
+<CREOLE-DIRECTORY>
+  <JAR SCAN="true">DeepSRLAdapter.jar</JAR>
+</CREOLE-DIRECTORY>
