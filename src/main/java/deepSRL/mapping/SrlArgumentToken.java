@@ -1,4 +1,4 @@
-package main.java.deepSRL.mapping;
+package deepSRL.mapping;
 
 
 public class SrlArgumentToken extends MultiToken {

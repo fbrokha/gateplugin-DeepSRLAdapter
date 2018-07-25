@@ -1,4 +1,4 @@
-package main.java.gate.deepSRL;
+package gate.deepSRL;
 
 import java.io.File;
 import java.net.URISyntaxException;
@@ -7,6 +7,13 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import deepSRL.DeepSRL;
+import deepSRL.DeepSRLBuilder;
+import deepSRL.mapping.Document;
+import deepSRL.mapping.Sentence;
+import deepSRL.mapping.SrlArgumentToken;
+import deepSRL.mapping.SrlVerbToken;
+import deepSRL.mapping.Token;
 import gate.Annotation;
 import gate.AnnotationSet;
 import gate.DocumentContent;
@@ -21,13 +28,6 @@ import gate.creole.metadata.CreoleResource;
 import gate.creole.metadata.Optional;
 import gate.creole.metadata.RunTime;
 import gate.util.InvalidOffsetException;
-import main.java.deepSRL.DeepSRL;
-import main.java.deepSRL.DeepSRLBuilder;
-import main.java.deepSRL.mapping.Document;
-import main.java.deepSRL.mapping.Sentence;
-import main.java.deepSRL.mapping.SrlArgumentToken;
-import main.java.deepSRL.mapping.SrlVerbToken;
-import main.java.deepSRL.mapping.Token;
 
 /**
  * This class is the implementation of the resource DeepSRLAdapter.

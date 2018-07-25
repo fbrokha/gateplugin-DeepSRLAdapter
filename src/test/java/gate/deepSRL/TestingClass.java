@@ -1,4 +1,4 @@
-package test.java.gate.deepSRL;
+package gate.deepSRL;
 
 import org.junit.Test;
 

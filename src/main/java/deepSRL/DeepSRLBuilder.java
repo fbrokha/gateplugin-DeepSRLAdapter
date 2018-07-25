@@ -1,4 +1,4 @@
-package main.java.deepSRL;
+package deepSRL;
 
 import java.io.File;
 import java.io.OutputStream;

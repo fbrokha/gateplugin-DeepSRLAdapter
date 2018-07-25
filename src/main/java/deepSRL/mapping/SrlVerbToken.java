@@ -1,4 +1,4 @@
-package main.java.deepSRL.mapping;
+package deepSRL.mapping;
 
 import java.util.ArrayList;
 import java.util.List;

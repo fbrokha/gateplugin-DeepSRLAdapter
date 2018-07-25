@@ -1,4 +1,4 @@
-package main.java.deepSRL;
+package deepSRL;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -8,8 +8,8 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 
-import main.java.deepSRL.mapping.Document;
-import main.java.deepSRL.mapping.ResultParser;
+import deepSRL.mapping.Document;
+import deepSRL.mapping.ResultParser;
 
 public class DeepSRL {
 

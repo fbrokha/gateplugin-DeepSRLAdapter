@@ -1,4 +1,4 @@
-package main.java.deepSRL.mapping;
+package deepSRL.mapping;
 
 public abstract class SimpleMapping implements Mapping {
 	private static final long serialVersionUID = 1L;
