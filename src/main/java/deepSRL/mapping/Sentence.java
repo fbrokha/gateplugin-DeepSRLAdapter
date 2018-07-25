@@ -7,7 +7,7 @@ public class Sentence extends SimpleMapping {
 	private static final long serialVersionUID = 1L;
 
 	protected List<Token> tokens = new ArrayList<>();
-	protected List<SrlVerbToken> multiTokens = new ArrayList<>();
+	protected List<SrlVerbToken> srlVerbs = new ArrayList<>();
 
 	public Sentence(Object documentId, Integer documentStart, Integer documentEnd) {
 		super(null);
@@ -33,8 +33,8 @@ public class Sentence extends SimpleMapping {
 		return tokens;
 	}
 
-	public List<SrlVerbToken> getMultiTokens() {
-		return multiTokens;
+	public List<SrlVerbToken> getSrlVerbs() {
+		return srlVerbs;
 	}
 
 	protected void addToken(Token token) {

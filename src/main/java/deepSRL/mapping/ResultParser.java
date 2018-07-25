@@ -72,7 +72,7 @@ public class ResultParser {
 				tokenLabels.addAll(Arrays.asList(tokenIterator.next().split(LABEL_SPLIT_REGEX)));
 				if(tokenLabels.get(SRL_ARGUMENT_TYPE).replaceAll(CHAR_MARKS, "").contentEquals(SRL_VERB_TYPE)) {
 					SrlVerbToken verb = new SrlVerbToken(sentence, SRL_VERB_TYPE, sentence.getTokens().get(Integer.valueOf(tokenLabels.get(SRL_ARG_START))), sentence.getTokens().get(Integer.valueOf(tokenLabels.get(SRL_ARG_END))));
-					sentence.multiTokens.add(verb);
+					sentence.srlVerbs.add(verb);
 				}
 				else {
 					//System.out.println("ArgTok from " + Integer.valueOf(tokenLabels.get(SRL_ARG_START)) + " to " + Integer.valueOf(tokenLabels.get(SRL_ARG_END)));
@@ -84,7 +84,7 @@ public class ResultParser {
 				}
 				tokenLabels.clear();
 			}
-			sentence.getMultiTokens().get(verbcount).addArguments(arguments);
+			sentence.getSrlVerbs().get(verbcount).addArguments(arguments);
 			tokens.clear();
 			arguments.clear();
 			verbcount += 1;

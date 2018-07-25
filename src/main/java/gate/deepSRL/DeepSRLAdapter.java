@@ -180,7 +180,7 @@ public class DeepSRLAdapter extends AbstractLanguageAnalyser {
 	protected void addSrlAnnotations(Long documentOffset, Document document, AnnotationSet outputAnnotationSet)
 			throws InvalidOffsetException {
 		for (Sentence sentence : document.getSentences()) {
-			for (SrlVerbToken verb : sentence.getMultiTokens()) {
+			for (SrlVerbToken verb : sentence.getSrlVerbs()) {
 				List<Integer> relationIds = new ArrayList<>();
 
 				DocumentContent verbText = this.document.getContent()
