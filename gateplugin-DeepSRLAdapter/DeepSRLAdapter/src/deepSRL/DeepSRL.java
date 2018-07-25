@@ -8,18 +8,13 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 
-
 import deepSRL.mapping.Document;
 import deepSRL.mapping.ResultParser;
-import gate.deepSRL.DeepSRLAdapter;
-import deepSRL.DeepSRL;
-import deepSRL.Util;
 
 public class DeepSRL {
-	
-	private static final String USERTOKEN = "1\n";
-	private static final String DEEPSRLTOKEN = "0\n";
-	
+
+	private static final String TEXT_END = "textsend\n";
+
 	private ExecutorService executor;
 	private ProcessBuilder processBuilder;
 	private InputStream inputStream;
@@ -28,52 +23,46 @@ public class DeepSRL {
 	private OutputStream outErrorStream;
 	private InputStream inErrorStream;
 	private Process process;
-	
-	private static final String TEXT_END = "textsend\n";
 
-	protected DeepSRL(ExecutorService executor, OutputStream errorStream,
-			ProcessBuilder processBuilder) {
+	private Boolean cancelled = false;
+
+	protected DeepSRL(ExecutorService executor, OutputStream errorStream, ProcessBuilder processBuilder) {
 		this.executor = executor;
 		this.outErrorStream = errorStream;
 		this.processBuilder = processBuilder;
 	}
-	
-	public void init () throws Exception {
+
+	public void init() throws Exception {
 		process = processBuilder.start();
 		outputStream = process.getOutputStream();
 		inErrorStream = process.getErrorStream();
 		inputStream = process.getInputStream();
 	}
-	
+
 	public void execute(final Document document) throws IOException, InterruptedException, ExecutionException {
-			executeProcess(document);
-	}
-	
-	private void executeProcess(final Document document) throws IOException, InterruptedException, ExecutionException {
+		if (cancelled) {
+			inputStream = process.getInputStream();
+			outputStream = process.getOutputStream();
+		}
 		try {
-			
-			if(DeepSRLAdapter.getUserTokens()) {
-				executor.submit(new Callable<Void>() {
-					@Override
-					public Void call() throws Exception {
-						in = new ByteArrayInputStream(USERTOKEN.concat(document.getDeepSRLText().concat(TEXT_END)).getBytes());
-						Util.copy(in, outputStream);
-						in.close();
-						return null;
-					}
-				});
-			}
-			else {
-				executor.submit(new Callable<Void>() {
-					@Override
-					public Void call() throws Exception {
-						in = new ByteArrayInputStream(DEEPSRLTOKEN.concat(document.getDeepSRLText().concat(TEXT_END)).getBytes());
-						Util.copy(in, outputStream);
-						in.close();
-						return null;
-					}
-				});
-			}
+			executeProcess(document);
+		} catch (Throwable e) {
+			e.printStackTrace();
+		}
+	}
+
+	private void executeProcess(final Document document)
+			throws IOException, InterruptedException, ExecutionException, Throwable {
+		try {
+			executor.submit(new Callable<Void>() {
+				@Override
+				public Void call() throws Exception {
+					in = new ByteArrayInputStream(document.getDeepSRLText().concat(TEXT_END).getBytes());
+					Util.copy(in, outputStream);
+					in.close();
+					return null;
+				}
+			});
 
 			executor.submit(new Callable<Void>() {
 				@Override
@@ -86,37 +75,36 @@ public class DeepSRL {
 			});
 
 			ResultParser.extractSRL(document, inputStream);
-			
-		} catch (IOException e) {
+
+		} catch (Throwable e) {
 			cancel();
 			throw e;
 		}
 	}
-	
+
 	public ExecutorService getExec() {
 		return executor;
 	}
-	
+
 	public Process getProcess() {
 		return process;
 	}
-	
+
 	public void shutdownService() {
 		process.destroy();
-		executor.shutdown();		
+		executor.shutdown();
 	}
 
 	private void cancel() {
-		
+		cancelled = true;
 		try {
 			outputStream.close();
 			inputStream.close();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-//		executor.shutdownNow();
-//		process.destroy();
+		// executor.shutdownNow();
+		// process.destroy();
 	}
-
 
 }

@@ -19,8 +19,9 @@ public class ResultParser {
 	private static final String SRL_VERB_TYPE = "V";
 	private static final String CHAR_MARKS = "'";
 	private static final String BACKSLASH = "\\";
-	private static final String EMPTY = "";
+	private static final String EMPTY_STRING = "";
 	private static final String COMP_DONE = "computationdone";
+	private static final String EMPTY_SRL = "empty";
 	private static final int SRL_ARGUMENT_TYPE = 0;
 	private static final int SRL_ARG_START = 1;
 	private static final int SRL_ARG_END = 2;
@@ -33,14 +34,21 @@ public class ResultParser {
 			if(line.matches(COMP_DONE)) {
 				break;
 				}
-			else if(!line.startsWith(SENTENCE_START_REGEX.replace(BACKSLASH, EMPTY))) {
+			else if (line.contentEquals(EMPTY_SRL)) {
+				sentenceNumber+=1;
 				continue;
 			}
-			else if (sentenceNumber < document.getSentences().size()) {
-				Sentence sentence = document.getSentences().get(sentenceNumber++);
+			else if(!line.startsWith(SENTENCE_START_REGEX.replace(BACKSLASH, EMPTY_STRING))) {
+				continue;
+			}
+			else if (sentenceNumber <= document.getSentences().size()) {
+				Sentence sentence = document.getSentences().get(sentenceNumber);
+				//System.out.println("Satz " + sentenceNumber + ": " + sentence.getTokens().size() + "  " + sentence.getDeepSRLText() + " vs. " + line);
 				parseSRL(sentence, line);
+				sentenceNumber+=1;
 			}
 			else {
+				reader.close();
 				throw new IllegalStateException("Number of extracted sentences doesn't match number of sentences in document");
 			}
 		}
@@ -67,6 +75,7 @@ public class ResultParser {
 					sentence.multiTokens.add(verb);
 				}
 				else {
+					//System.out.println("ArgTok from " + Integer.valueOf(tokenLabels.get(SRL_ARG_START)) + " to " + Integer.valueOf(tokenLabels.get(SRL_ARG_END)));
 					SrlArgumentToken argument = new SrlArgumentToken(sentence, tokenLabels.get(SRL_ARGUMENT_TYPE).replaceAll(CHAR_MARKS, ""), sentence.getTokens().get(Integer.valueOf(tokenLabels.get(SRL_ARG_START))), sentence.getTokens().get(Integer.valueOf(tokenLabels.get(SRL_ARG_END))));
 					arguments.add(argument);
 				}
