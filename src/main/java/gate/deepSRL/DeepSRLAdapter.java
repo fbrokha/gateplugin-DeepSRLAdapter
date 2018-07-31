@@ -1,6 +1,7 @@
 package gate.deepSRL;
 
 import java.io.File;
+import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -40,17 +41,16 @@ public class DeepSRLAdapter extends AbstractLanguageAnalyser {
 	 */
 	private static final long serialVersionUID = -9182190380538490182L;
 
-	private static final Integer MAX_INPUT_LENGTH = Integer.MAX_VALUE / 2;
-
 	private static final String ANNOTATION_SRL_NAME = "SRL";
 	private static final String ANNOTATION_SRL_FEATURE_VERB_NAME = "verb";
 	private static final String ANNOTATION_SRL_FEATURE_TYPE_NAME = "type";
 	private static final String ANNOTATION_SRL_FEATURE_ARGUMENT_JOIN = " [...] ";
 	private static final String RELATION_SRL_NAME = "SRL";
 
-	private URL executableFile;
+	private URL deepSRLExecutable;
 	private URL modelPath;
 	private URL propidModelPath;
+	private URL pythonExecutable;
 
 	private String inputASName;
 	private String inputSentenceType;
@@ -64,8 +64,7 @@ public class DeepSRLAdapter extends AbstractLanguageAnalyser {
 		try {
 			deepSRLinit();
 		} catch (Exception e) {
-			System.out.println("Init unsuccessful");
-			e.printStackTrace();
+			throw new ResourceInstantiationException(e);
 		}
 		return this;
 	}
@@ -81,6 +80,14 @@ public class DeepSRLAdapter extends AbstractLanguageAnalyser {
 		super.cleanup();
 	}
 
+	private void deepSRLinit() throws Exception {
+		DeepSRLBuilder builder = new DeepSRLBuilder(urlToFile(deepSRLExecutable), urlToFile(modelPath),
+				urlToFile(propidModelPath), urlToFile(pythonExecutable));
+
+		deepSRLprocess = builder.build();
+		deepSRLprocess.init();
+	}
+
 	@Override
 	public void execute() throws ExecutionException {
 
@@ -92,15 +99,6 @@ public class DeepSRLAdapter extends AbstractLanguageAnalyser {
 		} catch (Exception e) {
 			throw new ExecutionException(e);
 		}
-		System.out.println("DeepSRL Computation finished");
-	}
-
-	private void deepSRLinit() throws Exception {
-		DeepSRLBuilder builder = new DeepSRLBuilder(urlToFile(executableFile), urlToFile(modelPath),
-				urlToFile(propidModelPath));
-
-		deepSRLprocess = builder.build();
-		deepSRLprocess.init();
 	}
 
 	private void executeContent(DocumentContent documentContent, AnnotationSet inputAnnotationSet,
@@ -133,26 +131,6 @@ public class DeepSRLAdapter extends AbstractLanguageAnalyser {
 			Document deepSRLDocument = new Document(documentText, sentences);
 			executeDeepSRL(documentOffset, deepSRLDocument, outputAnnotationSet);
 		}
-		//
-		// } else if (documentContent.size() < MAX_INPUT_LENGTH.longValue()) {
-		// Sentence sentence;
-		//
-		// if (userTokens) {
-		// List<Token> tokens = buildTokens(0l, inputAnnotationSet, 0l,
-		// documentContent.size(), reuseAnnotations);
-		// sentence = new Sentence(null, 0, documentContent.size().intValue(), tokens);
-		// } else {
-		// sentence = new Sentence(null, 0, documentContent.size().intValue());
-		// }
-		//
-		// sentences.add(sentence);
-		// deepSRLDocument = new Document(documentContent.getContent(0l,
-		// documentContent.size()).toString(),
-		// sentences);
-		// executeDeepSRL(0l, deepSRLDocument, outputAnnotationSet);
-		// } else {
-		// throw new IllegalStateException();
-		// }
 	}
 
 	protected void executeDeepSRL(Long documentOffset, final Document document, AnnotationSet outputAnnotationSet)
@@ -193,7 +171,7 @@ public class DeepSRLAdapter extends AbstractLanguageAnalyser {
 				for (SrlArgumentToken argument : verb.getArguments()) {
 					DocumentContent argumentText = this.document.getContent().getContent(
 							documentOffset + argument.getDocumentStart(), documentOffset + argument.getDocumentEnd());
-					// was soll diese if abfrage??
+
 					if (verbFeatures.get(argument.getType()) != null) {
 						verbFeatures.put(argument.getType(), verbFeatures.get(argument.getType())
 								+ ANNOTATION_SRL_FEATURE_ARGUMENT_JOIN + argumentText);
@@ -238,22 +216,25 @@ public class DeepSRLAdapter extends AbstractLanguageAnalyser {
 		return e1.equals(e2);
 	}
 
-	private static boolean hasValue(String string) {
-		return string != null && string.length() > 0;
+	@CreoleParameter(comment = "python executable, version 2.x.x required", defaultValue = "")
+	public void setPythonExecutable(URL pythonExecutable) {
+		this.pythonExecutable = pythonExecutable;
 	}
 
-	// @Optional(false)
-	@CreoleParameter(comment = "DeepSRL executable", defaultValue = "")
-	public void setExecutableFile(URL executableFile) {
-		this.executableFile = executableFile;
+	public URL getPythonExecutable() throws MalformedURLException {
+		return pythonExecutable;
 	}
 
-	public URL getExecutableFile() {
-		return executableFile;
+	@CreoleParameter(comment = "DeepSRL executable, name: \"gate_deepSRL.py\"", defaultValue = "")
+	public void setDeepSRLExecutable(URL deepSRLExecutable) {
+		this.deepSRLExecutable = deepSRLExecutable;
 	}
 
-	// @Optional(false)
-	@CreoleParameter(comment = "DeepSRL ModelPath", defaultValue = "")
+	public URL getDeepSRLExecutable() {
+		return deepSRLExecutable;
+	}
+
+	@CreoleParameter(comment = "DeepSRL ModelPath, name: \\conll05_model", defaultValue = "")
 	public void setModelPath(URL PATH) {
 		this.modelPath = PATH;
 	}
@@ -262,8 +243,7 @@ public class DeepSRLAdapter extends AbstractLanguageAnalyser {
 		return modelPath;
 	}
 
-	// @Optional(false)
-	@CreoleParameter(comment = "DeepSRL PropidModelPath", defaultValue = "")
+	@CreoleParameter(comment = "DeepSRL PropidModelPath, name: \\conll05_propid_model", defaultValue = "")
 	public void setPropidModelPath(URL PATH) {
 		this.propidModelPath = PATH;
 	}

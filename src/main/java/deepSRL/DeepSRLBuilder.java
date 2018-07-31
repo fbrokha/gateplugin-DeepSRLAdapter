@@ -9,23 +9,23 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class DeepSRLBuilder {
-	
+
 	private ExecutorService executor;
-	private File DeepSRLFile;
+	private File pythonExecutable;
+	private File deepSRLFile;
 	private File modelFile;
 	private File pidmodelFile;
 	private List<CommandOption> commandOptions = new ArrayList<>();
 	private OutputStream errorStream = System.err;
-	private String PYTHON_EXEC_PATH = "C:\\ENVpy2\\Scripts\\python.exe";
-	
+
 	private static enum CommandOption {
-		
+
 		/** Path to the DeepSRL Model */
 		MODEL("--model"),
-		
+
 		/** Path to the desired Propid Model */
-		PIDMODEL("--pidmodel");		
-		
+		PIDMODEL("--pidmodel");
+
 		private String command;
 		private File file;
 
@@ -46,45 +46,29 @@ public class DeepSRLBuilder {
 			}
 		}
 	}
-	
-	public DeepSRLBuilder(File DeepSRLFile, File modelFile, File pidmodelFile) {
-		this.DeepSRLFile = DeepSRLFile;
+
+	public DeepSRLBuilder(File deepSRLFile, File modelFile, File pidmodelFile, File pythonExecutable) {
+		this.deepSRLFile = deepSRLFile;
 		this.modelFile = modelFile;
 		this.pidmodelFile = pidmodelFile;
+		this.pythonExecutable = pythonExecutable;
 	}
-	
+
 	public DeepSRL build() {
 		List<String> command = new ArrayList<>();
-		command.add(PYTHON_EXEC_PATH);
-		command.add(DeepSRLFile.getAbsolutePath());
+		command.add(pythonExecutable.getAbsolutePath());
+		command.add(deepSRLFile.getAbsolutePath());
 		commandOptions.add(CommandOption.MODEL.withFile(modelFile));
 		commandOptions.add(CommandOption.PIDMODEL.withFile(pidmodelFile));
 
 		for (CommandOption commandOption : commandOptions) {
 			command.addAll(commandOption.getCommandString());
 		}
-		
-		
 
 		ProcessBuilder processBuilder = new ProcessBuilder(command);
-		processBuilder.directory(DeepSRLFile.getParentFile());
+		processBuilder.directory(deepSRLFile.getParentFile());
 		ExecutorService executor = this.executor != null ? this.executor : Executors.newCachedThreadPool();
 		return new DeepSRL(executor, errorStream, processBuilder);
 	}
-	
-//	public DeepSRLBuilder modelPath(File modelFile) {
-//		commandOptions.add(CommandOption.MODEL.withFile(modelFile));
-//		return this;
-//	}
-//	
-//	public DeepSRLBuilder pidmodelPath(File pidmodelFile) {
-//		commandOptions.add(CommandOption.PIDMODEL.withFile(pidmodelFile));
-//		return this;
-//	}
-//	
-//	public DeepSRLBuilder inputDataPath(File dataFile) {
-//		commandOptions.add(CommandOption.INPUTDATA.withFile(dataFile));
-//		return this;
-//	}
 
 }

@@ -10,6 +10,7 @@ import java.util.concurrent.ExecutorService;
 
 import deepSRL.mapping.Document;
 import deepSRL.mapping.ResultParser;
+import gate.creole.ResourceInstantiationException;
 
 public class DeepSRL {
 
@@ -24,35 +25,39 @@ public class DeepSRL {
 	private InputStream inErrorStream;
 	private Process process;
 
-	private Boolean cancelled = false;
-
 	protected DeepSRL(ExecutorService executor, OutputStream errorStream, ProcessBuilder processBuilder) {
 		this.executor = executor;
 		this.outErrorStream = errorStream;
 		this.processBuilder = processBuilder;
 	}
 
-	public void init() throws Exception {
+	public void init() throws Exception, ResourceInstantiationException, IOException {
 		process = processBuilder.start();
 		outputStream = process.getOutputStream();
 		inErrorStream = process.getErrorStream();
 		inputStream = process.getInputStream();
+
+		ResultParser.checkInitialization(inErrorStream, inputStream, process);
+
+		executor.submit(new Callable<Void>() {
+			@Override
+			public Void call() throws Exception {
+				Util.copy(inErrorStream, outErrorStream);
+				return null;
+			}
+		});
+
 	}
 
 	public void execute(final Document document) throws IOException, InterruptedException, ExecutionException {
-		if (cancelled) {
-			inputStream = process.getInputStream();
-			outputStream = process.getOutputStream();
-		}
 		try {
 			executeProcess(document);
-		} catch (Throwable e) {
-			e.printStackTrace();
+		} catch (Exception e) {
+			throw e;
 		}
 	}
 
-	private void executeProcess(final Document document)
-			throws IOException, InterruptedException, ExecutionException, Throwable {
+	private void executeProcess(final Document document) throws IOException, InterruptedException, ExecutionException {
 		try {
 			executor.submit(new Callable<Void>() {
 				@Override
@@ -64,47 +69,23 @@ public class DeepSRL {
 				}
 			});
 
-			executor.submit(new Callable<Void>() {
-				@Override
-				public Void call() throws Exception {
-					Util.copy(inErrorStream, DeepSRL.this.outErrorStream);
-					outErrorStream.close();
-					inErrorStream.close();
-					return null;
-				}
-			});
-
 			ResultParser.extractSRL(document, inputStream);
 
-		} catch (Throwable e) {
-			cancel();
+		} catch (Exception e) {
 			throw e;
 		}
 	}
 
-	public ExecutorService getExec() {
-		return executor;
-	}
-
-	public Process getProcess() {
-		return process;
-	}
-
 	public void shutdownService() {
-		process.destroy();
-		executor.shutdown();
-	}
-
-	private void cancel() {
-		cancelled = true;
 		try {
+			outErrorStream.close();
 			outputStream.close();
 			inputStream.close();
+			inErrorStream.close();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		// executor.shutdownNow();
-		// process.destroy();
+		process.destroy();
+		executor.shutdown();
 	}
-
 }

@@ -17,16 +17,13 @@ public class DocumentBuilder {
 	private static Comparator<SimpleMapping> MAPPING_COMPARATOR = new Comparator<SimpleMapping>() {
 		@Override
 		public int compare(SimpleMapping o1, SimpleMapping o2) {
-			if(o1.getDocumentEnd() == o2.getDocumentStart()) {
+			if (o1.getDocumentEnd() == o2.getDocumentStart()) {
 				return 0;
 			} else if (o1.getDocumentEnd() > o2.getDocumentStart()) {
 				return 1;
 			} else if (o1.getDocumentStart() < o2.getDocumentEnd()) {
 				return -1;
 			}
-//			else {
-//				return 0;
-//			}
 			return 0;
 		}
 	};
@@ -62,10 +59,6 @@ public class DocumentBuilder {
 			if (previousSentence != null) {
 				deepSRLText.append(DEEPSRL_SENTENCESPLIT);
 			}
-//			if (sentenceDeepSRLText.length() > DEEPSRL_MAX_SENTENCE_SIZE) {
-//				throw new IllegalStateException(
-//						"Sentence too long, max size is " + DEEPSRL_MAX_SENTENCE_SIZE + "\n" + sentenceDeepSRLText);
-//			}
 			deepSRLText.append(sentenceDeepSRLText.toString());
 
 			sentence.deepSRLStart = sentenceDeepSRLOffset;
