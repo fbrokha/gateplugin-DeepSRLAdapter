@@ -1,6 +1,7 @@
 package deepSRL;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -15,7 +16,6 @@ public class DeepSRLBuilder {
 	private File deepSRLFile;
 	private File modelFile;
 	private File pidmodelFile;
-	private List<CommandOption> commandOptions = new ArrayList<>();
 	private OutputStream errorStream = System.err;
 
 	private static enum CommandOption {
@@ -38,7 +38,7 @@ public class DeepSRLBuilder {
 			return this;
 		}
 
-		private List<String> getCommandString() {
+		private List<String> getCommand() {
 			if (file != null) {
 				return new ArrayList<>(Arrays.asList(command, file.getAbsolutePath()));
 			} else {
@@ -47,28 +47,35 @@ public class DeepSRLBuilder {
 		}
 	}
 
-	public DeepSRLBuilder(File deepSRLFile, File modelFile, File pidmodelFile, File pythonExecutable) {
+	public DeepSRLBuilder(File pythonExecutable, File deepSRLFile, File modelFile, File pidmodelFile) {
+		this.pythonExecutable = pythonExecutable;
 		this.deepSRLFile = deepSRLFile;
 		this.modelFile = modelFile;
 		this.pidmodelFile = pidmodelFile;
-		this.pythonExecutable = pythonExecutable;
 	}
 
-	public DeepSRL build() {
+	public DeepSRLBuilder withErrorStream(OutputStream errorStream) {
+		this.errorStream = errorStream;
+		return this;
+	}
+
+	public DeepSRLBuilder withExecutor(ExecutorService executor) {
+		this.executor = executor;
+		return this;
+	}
+
+	public DeepSRL build() throws IOException {
 		List<String> command = new ArrayList<>();
 		command.add(pythonExecutable.getAbsolutePath());
 		command.add(deepSRLFile.getAbsolutePath());
-		commandOptions.add(CommandOption.MODEL.withFile(modelFile));
-		commandOptions.add(CommandOption.PIDMODEL.withFile(pidmodelFile));
-
-		for (CommandOption commandOption : commandOptions) {
-			command.addAll(commandOption.getCommandString());
-		}
+		command.addAll(CommandOption.MODEL.withFile(modelFile).getCommand());
+		command.addAll(CommandOption.PIDMODEL.withFile(pidmodelFile).getCommand());
 
 		ProcessBuilder processBuilder = new ProcessBuilder(command);
 		processBuilder.directory(deepSRLFile.getParentFile());
 		ExecutorService executor = this.executor != null ? this.executor : Executors.newCachedThreadPool();
-		return new DeepSRL(executor, errorStream, processBuilder);
+		System.out.println(String.join(" ", processBuilder.command()));
+		return new DeepSRL(executor, errorStream, processBuilder.start());
 	}
 
 }

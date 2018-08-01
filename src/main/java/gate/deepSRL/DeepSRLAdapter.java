@@ -1,6 +1,7 @@
 package gate.deepSRL;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -47,10 +48,10 @@ public class DeepSRLAdapter extends AbstractLanguageAnalyser {
 	private static final String ANNOTATION_SRL_FEATURE_ARGUMENT_JOIN = " [...] ";
 	private static final String RELATION_SRL_NAME = "SRL";
 
+	private URL pythonExecutable;
 	private URL deepSRLScript;
 	private URL modelPath;
 	private URL propidModelPath;
-	private URL pythonExecutable;
 
 	private String inputASName;
 	private String inputSentenceType;
@@ -62,7 +63,10 @@ public class DeepSRLAdapter extends AbstractLanguageAnalyser {
 	@Override
 	public Resource init() throws ResourceInstantiationException {
 		try {
-			deepSRLinit();
+			DeepSRLBuilder builder = new DeepSRLBuilder(urlToFile(pythonExecutable), urlToFile(deepSRLScript),
+					urlToFile(modelPath), urlToFile(propidModelPath));
+
+			deepSRLprocess = builder.build();
 		} catch (Exception e) {
 			throw new ResourceInstantiationException(e);
 		}
@@ -76,16 +80,12 @@ public class DeepSRLAdapter extends AbstractLanguageAnalyser {
 
 	@Override
 	public void cleanup() {
-		deepSRLprocess.shutdownService();
+		try {
+			deepSRLprocess.shutdownService();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 		super.cleanup();
-	}
-
-	private void deepSRLinit() throws Exception {
-		DeepSRLBuilder builder = new DeepSRLBuilder(urlToFile(deepSRLScript), urlToFile(modelPath),
-				urlToFile(propidModelPath), urlToFile(pythonExecutable));
-
-		deepSRLprocess = builder.build();
-		deepSRLprocess.init();
 	}
 
 	@Override
@@ -104,7 +104,6 @@ public class DeepSRLAdapter extends AbstractLanguageAnalyser {
 	private void executeContent(DocumentContent documentContent, AnnotationSet inputAnnotationSet,
 			AnnotationSet outputAnnotationSet) throws Exception {
 		List<Sentence> sentences = new ArrayList<>();
-		boolean reuseAnnotations = equals(inputASName, outputASName);
 
 		Long documentOffset = 0l;
 		Long lastSentenceEnd = 0l;
@@ -114,14 +113,12 @@ public class DeepSRLAdapter extends AbstractLanguageAnalyser {
 			Long sentenceStart = sentenceAnnotation.getStartNode().getOffset();
 			Long sentenceEnd = sentenceAnnotation.getEndNode().getOffset();
 
-			Integer id = reuseAnnotations ? sentenceAnnotation.getId() : null;
 			int documentStart = (int) (sentenceStart - documentOffset);
 			int documentEnd = (int) (sentenceEnd - documentOffset);
 			Sentence sentence;
 
-			List<Token> tokens = buildTokens(documentOffset, inputAnnotationSet, sentenceStart, sentenceEnd,
-					reuseAnnotations);
-			sentence = new Sentence(id, documentStart, documentEnd, tokens);
+			List<Token> tokens = buildTokens(documentOffset, inputAnnotationSet, sentenceStart, sentenceEnd);
+			sentence = new Sentence(sentenceAnnotation.getId(), documentStart, documentEnd, tokens);
 
 			sentences.add(sentence);
 			lastSentenceEnd = sentenceEnd;
@@ -141,7 +138,7 @@ public class DeepSRLAdapter extends AbstractLanguageAnalyser {
 	}
 
 	private List<Token> buildTokens(Long documentOffset, AnnotationSet inputAnnotationSet, Long sentenceStart,
-			Long sentenceEnd, boolean reuseAnnotations) throws InvalidOffsetException {
+			Long sentenceEnd) throws InvalidOffsetException {
 		List<Token> tokens = new ArrayList<>();
 		AnnotationSet inputTokenSet = inputAnnotationSet.get(inputTokenType, sentenceStart, sentenceEnd);
 		Iterator<Annotation> tokenAnnotationIterator = inputTokenSet.iterator();
@@ -149,8 +146,8 @@ public class DeepSRLAdapter extends AbstractLanguageAnalyser {
 			Annotation tokenAnnotation = tokenAnnotationIterator.next();
 			Long tokenStart = tokenAnnotation.getStartNode().getOffset();
 			Long tokenEnd = tokenAnnotation.getEndNode().getOffset();
-			Integer id = reuseAnnotations ? tokenAnnotation.getId() : null;
-			tokens.add(new Token(id, (int) (tokenStart - documentOffset), (int) (tokenEnd - documentOffset)));
+			tokens.add(new Token(tokenAnnotation.getId(), (int) (tokenStart - documentOffset),
+					(int) (tokenEnd - documentOffset)));
 		}
 		return tokens;
 	}
@@ -206,14 +203,6 @@ public class DeepSRLAdapter extends AbstractLanguageAnalyser {
 		for (Integer e : list)
 			ret[i++] = e.intValue();
 		return ret;
-	}
-
-	private static <E> boolean equals(E e1, E e2) {
-		if (e1 == null && e2 == null)
-			return true;
-		if (e1 == null || e2 == null)
-			return false;
-		return e1.equals(e2);
 	}
 
 	@CreoleParameter(comment = "python executable, version 2.x.x required", defaultValue = "")
