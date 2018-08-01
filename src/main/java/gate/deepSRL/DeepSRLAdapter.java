@@ -47,7 +47,7 @@ public class DeepSRLAdapter extends AbstractLanguageAnalyser {
 	private static final String ANNOTATION_SRL_FEATURE_ARGUMENT_JOIN = " [...] ";
 	private static final String RELATION_SRL_NAME = "SRL";
 
-	private URL deepSRLExecutable;
+	private URL deepSRLScript;
 	private URL modelPath;
 	private URL propidModelPath;
 	private URL pythonExecutable;
@@ -81,7 +81,7 @@ public class DeepSRLAdapter extends AbstractLanguageAnalyser {
 	}
 
 	private void deepSRLinit() throws Exception {
-		DeepSRLBuilder builder = new DeepSRLBuilder(urlToFile(deepSRLExecutable), urlToFile(modelPath),
+		DeepSRLBuilder builder = new DeepSRLBuilder(urlToFile(deepSRLScript), urlToFile(modelPath),
 				urlToFile(propidModelPath), urlToFile(pythonExecutable));
 
 		deepSRLprocess = builder.build();
@@ -225,13 +225,13 @@ public class DeepSRLAdapter extends AbstractLanguageAnalyser {
 		return pythonExecutable;
 	}
 
-	@CreoleParameter(comment = "DeepSRL executable, name: \"gate_deepSRL.py\"", defaultValue = "")
-	public void setDeepSRLExecutable(URL deepSRLExecutable) {
-		this.deepSRLExecutable = deepSRLExecutable;
+	@CreoleParameter(comment = "DeepSRL Script, name: \"gate_deepSRL.py\"", defaultValue = "")
+	public void setDeepSRLScript(URL deepSRLScript) {
+		this.deepSRLScript = deepSRLScript;
 	}
 
-	public URL getDeepSRLExecutable() {
-		return deepSRLExecutable;
+	public URL getDeepSRLScript() {
+		return deepSRLScript;
 	}
 
 	@CreoleParameter(comment = "DeepSRL ModelPath, name: \\conll05_model", defaultValue = "")

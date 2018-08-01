@@ -23,7 +23,6 @@ import re
 
 def load_model(model_path, model_type):
   config = configuration.get_config(os.path.join(model_path, 'config'))
-  # Load word and tag dictionary
   word_dict = Dictionary(unknown_token=UNKNOWN_TOKEN)
   label_dict = Dictionary()
   word_dict.load(os.path.join(model_path, 'word_dict'))
@@ -67,15 +66,12 @@ if __name__ == "__main__":
   srl_pred_function = srl_model.get_distribution_function()
 
   print "initsuccessful"
+  sys.stdout.flush()
   
-  tokenidentifier=False
-  usertokens=False
   sentence = raw_input()
   while sentence:
 
     if sentence == "textsend":
-      tokenidentifier=False
-      usertokens=False
       print "computationdone"
       sys.stdout.flush()
       sentence = raw_input()

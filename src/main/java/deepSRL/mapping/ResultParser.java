@@ -27,18 +27,18 @@ public class ResultParser {
 	private static final int SRL_ARG_END = 2;
 
 	@SuppressWarnings(value = { "unused" })
-	public static void checkInitialization(InputStream inErrorStream, InputStream inputStream, Process process)
-			throws Exception {
+	public static void checkInitialization(InputStream inErrorStream, InputStream inputStream) throws Exception {
 		BufferedReader err_reader = new BufferedReader(new InputStreamReader(inErrorStream));
 		BufferedReader in_reader = new BufferedReader(new InputStreamReader(inputStream));
 		String err_line;
 		String in_line;
-		while (process.isAlive()) {
-			if ((err_line = err_reader.readLine()) != null) {
-				throw new Exception(
-						"gate_deepSRL.py returned Errors. Check parameter setup according to instructions.");
-			}
-			if ((in_line = in_reader.readLine()).matches(INIT_SUCCESS)) {
+		while (true) {
+			if (err_reader.ready()) {
+				if (err_reader.readLine() != null) {
+					throw new Exception(
+							"gate_deepSRL.py returned Errors. Check parameter setup according to instructions.");
+				}
+			} else if ((in_line = in_reader.readLine()).matches(INIT_SUCCESS)) {
 				break;
 			}
 		}
@@ -63,7 +63,7 @@ public class ResultParser {
 			} else {
 				reader.close();
 				throw new IllegalStateException(
-						"Number of extracted sentences doesn't match number of sentences in document");
+						"Number of extracted sentences does not match number of sentences in document");
 			}
 		}
 	}

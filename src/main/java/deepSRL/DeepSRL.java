@@ -37,7 +37,7 @@ public class DeepSRL {
 		inErrorStream = process.getErrorStream();
 		inputStream = process.getInputStream();
 
-		ResultParser.checkInitialization(inErrorStream, inputStream, process);
+		ResultParser.checkInitialization(inErrorStream, inputStream);
 
 		executor.submit(new Callable<Void>() {
 			@Override
@@ -46,7 +46,6 @@ public class DeepSRL {
 				return null;
 			}
 		});
-
 	}
 
 	public void execute(final Document document) throws IOException, InterruptedException, ExecutionException {
