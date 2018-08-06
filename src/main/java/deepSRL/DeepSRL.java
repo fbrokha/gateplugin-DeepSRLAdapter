@@ -4,6 +4,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.PrintStream;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -28,7 +29,7 @@ public class DeepSRL {
 		this.inputStream = process.getInputStream();
 		this.errorStream = process.getErrorStream();
 
-		ResultParser.checkInitialization(inputStream, errorStream);
+		ResultParser.checkInitialization(inputStream, errorStream, new PrintStream(outErrorStream));
 
 		executor.submit(new Callable<Void>() {
 			@Override

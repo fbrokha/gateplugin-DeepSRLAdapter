@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -27,7 +28,8 @@ public class ResultParser {
 	private static final int SRL_ARG_START = 1;
 	private static final int SRL_ARG_END = 2;
 
-	public static void checkInitialization(InputStream inputStream, InputStream errorStream) throws IOException {
+	public static void checkInitialization(InputStream inputStream, InputStream errorStream, PrintStream outErrorStream)
+			throws IOException {
 		BufferedReader inReader = new BufferedReader(new InputStreamReader(inputStream));
 		BufferedReader errorReader = new BufferedReader(new InputStreamReader(errorStream));
 		String inLine;
@@ -36,7 +38,7 @@ public class ResultParser {
 			if (errorReader.ready()) {
 				if ((errorLine = errorReader.readLine()) != null) {
 					if (errorLine.startsWith(WARNING_PREFIX)) {
-						System.err.println(errorLine);
+						outErrorStream.println(errorLine);
 					} else {
 						List<String> errorLines = new ArrayList<>();
 						errorLines.add(errorLine);
