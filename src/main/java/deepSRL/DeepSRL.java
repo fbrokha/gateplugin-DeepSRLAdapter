@@ -24,6 +24,7 @@ public class DeepSRL {
 	private InputStream errorStream;
 
 	protected DeepSRL(ExecutorService executor, OutputStream outErrorStream, Process process) throws IOException {
+		this.process = process;
 		this.executor = executor;
 		this.outputStream = process.getOutputStream();
 		this.inputStream = process.getInputStream();
