@@ -1,9 +1,9 @@
 package gate.deepSRL;
 
-import java.io.File;
+import static gate.util.Files.fileFromURL;
+
 import java.io.IOException;
 import java.net.MalformedURLException;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -63,8 +63,8 @@ public class DeepSRLAdapter extends AbstractLanguageAnalyser {
 	@Override
 	public Resource init() throws ResourceInstantiationException {
 		try {
-			DeepSRLBuilder builder = new DeepSRLBuilder(urlToFile(pythonExecutable), urlToFile(deepSRLScript),
-					urlToFile(modelPath), urlToFile(propidModelPath));
+			DeepSRLBuilder builder = new DeepSRLBuilder(fileFromURL(pythonExecutable), fileFromURL(deepSRLScript),
+					fileFromURL(modelPath), fileFromURL(propidModelPath));
 
 			deepSRLprocess = builder.build();
 		} catch (Exception e) {
@@ -191,10 +191,6 @@ public class DeepSRLAdapter extends AbstractLanguageAnalyser {
 				}
 			}
 		}
-	}
-
-	private static File urlToFile(URL url) throws URISyntaxException {
-		return new File(url.toURI());
 	}
 
 	private static int[] toIntArray(List<Integer> list) {
