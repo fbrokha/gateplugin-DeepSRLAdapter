@@ -74,7 +74,6 @@ public class DeepSRLBuilder {
 		ProcessBuilder processBuilder = new ProcessBuilder(command);
 		processBuilder.directory(deepSRLFile.getParentFile());
 		ExecutorService executor = this.executor != null ? this.executor : Executors.newCachedThreadPool();
-		System.out.println(String.join(" ", processBuilder.command()));
 		return new DeepSRL(executor, errorStream, processBuilder.start());
 	}
 
