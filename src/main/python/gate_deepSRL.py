@@ -20,27 +20,13 @@ import os
 import sys
 import theano
 import re
+from interactive import load_model
 
-def load_model(model_path, model_type):
-  config = configuration.get_config(os.path.join(model_path, 'config'))
-  word_dict = Dictionary(unknown_token=UNKNOWN_TOKEN)
-  label_dict = Dictionary()
-  word_dict.load(os.path.join(model_path, 'word_dict'))
-  label_dict.load(os.path.join(model_path, 'label_dict'))
-  data = TaggerData(config, [], [], word_dict, label_dict, None, None)
-
-  if model_type == 'srl':
-    test_sentences, emb_inits, emb_shapes = reader.get_srl_test_data(
-        None, config, data.word_dict, data.label_dict, False)
-  else:
-    test_sentences, emb_inits, emb_shapes = reader.get_postag_test_data(
-        None, config, data.word_dict, data.label_dict, False)
-  
-  data.embedding_shapes = emb_shapes
-  data.embeddings = emb_inits
-  model = BiLSTMTaggerModel(data, config=config, fast_predict=True)
-  model.load(os.path.join(model_path, 'model.npz'))
-  return model, data
+def read_sentence():
+  try:
+    return raw_input()
+  except EOFError:
+    sys.exit(0)
 
 if __name__ == "__main__":
 
@@ -68,13 +54,14 @@ if __name__ == "__main__":
   print "initsuccessful"
   sys.stdout.flush()
   
-  sentence = raw_input()
+  sentence = read_sentence()
+    
   while sentence:
 
     if sentence == "textsend":
       print "computationdone"
       sys.stdout.flush()
-      sentence = raw_input()
+      sentence = read_sentence()
       continue
 
     tokenized_sent = sentence.split()
@@ -97,7 +84,7 @@ if __name__ == "__main__":
     if len(s1) == 0:
       print "empty"
       sys.stdout.flush()
-      sentence = raw_input()
+      sentence = read_sentence()
       continue
 
     x, _, _, weights = srl_data.get_test_data(s1, batch_size=None)
@@ -111,4 +98,4 @@ if __name__ == "__main__":
 
     print arguments
     sys.stdout.flush()
-    sentence = raw_input()
+    sentence = read_sentence()
