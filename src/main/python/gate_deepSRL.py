@@ -68,13 +68,19 @@ if __name__ == "__main__":
   print "initsuccessful"
   sys.stdout.flush()
   
-  sentence = raw_input()
+  try:
+    sentence = raw_input()
+  except EOFError:
+    sys.exit(0)
   while sentence:
 
     if sentence == "textsend":
       print "computationdone"
       sys.stdout.flush()
-      sentence = raw_input()
+      try:
+        sentence = raw_input()
+      except EOFError:
+        sys.exit(0)
       continue
 
     tokenized_sent = sentence.split()
@@ -97,7 +103,10 @@ if __name__ == "__main__":
     if len(s1) == 0:
       print "empty"
       sys.stdout.flush()
-      sentence = raw_input()
+      try:
+        sentence = raw_input()
+      except EOFError:
+        sys.exit(0)
       continue
 
     x, _, _, weights = srl_data.get_test_data(s1, batch_size=None)
@@ -111,4 +120,7 @@ if __name__ == "__main__":
 
     print arguments
     sys.stdout.flush()
-    sentence = raw_input()
+    try:
+      sentence = raw_input()
+    except EOFError:
+      sys.exit(0)
