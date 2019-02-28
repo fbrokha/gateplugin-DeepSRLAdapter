@@ -6,6 +6,7 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -17,6 +18,7 @@ public class DeepSRLBuilder {
 	private File modelFile;
 	private File pidmodelFile;
 	private OutputStream errorStream = System.err;
+	private Map<String, String> env;
 
 	private static enum CommandOption {
 
@@ -63,6 +65,11 @@ public class DeepSRLBuilder {
 		this.executor = executor;
 		return this;
 	}
+	
+	public DeepSRLBuilder withEnvironment(Map<String, String> env) {
+		this.env = env;
+		return this;
+	}
 
 	public DeepSRL build() throws IOException {
 		List<String> command = new ArrayList<>();
@@ -73,6 +80,9 @@ public class DeepSRLBuilder {
 
 		ProcessBuilder processBuilder = new ProcessBuilder(command);
 		processBuilder.directory(deepSRLFile.getParentFile());
+		if (this.env != null) {
+			processBuilder.environment().putAll(this.env);
+		}
 		ExecutorService executor = this.executor != null ? this.executor : Executors.newCachedThreadPool();
 		return new DeepSRL(executor, errorStream, processBuilder.start());
 	}

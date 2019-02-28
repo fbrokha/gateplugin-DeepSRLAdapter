@@ -7,7 +7,11 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import deepSRL.DeepSRL;
 import deepSRL.DeepSRLBuilder;
@@ -48,6 +52,7 @@ public class DeepSRLAdapter extends AbstractLanguageAnalyser {
 	private static final String ANNOTATION_SRL_FEATURE_ARGUMENT_JOIN = " [...] ";
 	private static final String RELATION_SRL_NAME = "SRL";
 
+	private String environment;
 	private URL pythonExecutable;
 	private URL deepSRLScript;
 	private URL modelPath;
@@ -65,7 +70,7 @@ public class DeepSRLAdapter extends AbstractLanguageAnalyser {
 		try {
 			DeepSRLBuilder builder = new DeepSRLBuilder(fileFromURL(pythonExecutable), fileFromURL(deepSRLScript),
 					fileFromURL(modelPath), fileFromURL(propidModelPath));
-
+			builder.withEnvironment(parseEnvironmentString(this.environment));
 			deepSRLprocess = builder.build();
 		} catch (Exception e) {
 			throw new ResourceInstantiationException(e);
@@ -199,6 +204,31 @@ public class DeepSRLAdapter extends AbstractLanguageAnalyser {
 		for (Integer e : list)
 			ret[i++] = e.intValue();
 		return ret;
+	}
+
+	private static Map<String, String> parseEnvironmentString(String string) {
+		Map<String, String> env = new LinkedHashMap<String, String>();
+		
+		String pattern = "\\b([^\\s]+)=([^\\s]+)\\b";
+
+		Pattern r = Pattern.compile(pattern);
+		Matcher m = r.matcher(string);
+
+		while (m.find()) {
+		    env.put(m.group(1), m.group(2));
+		}
+
+		return env;
+	}
+
+	@Optional
+	@CreoleParameter(comment = "environment variables (linux-style, e.g. 'MKL_THREADING_LAYER=GNU')", defaultValue = "")
+	public void setEnvironment(String environment) {
+		this.environment = environment;
+	}
+
+	public String getEnvironment() {
+		return environment;
 	}
 
 	@CreoleParameter(comment = "python executable, version 2.x.x required", defaultValue = "")
