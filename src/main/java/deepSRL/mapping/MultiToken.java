@@ -12,8 +12,7 @@ public class MultiToken implements Mapping {
 		this(sentence, type, startToken, null);
 	}
 
-	protected MultiToken(Sentence sentence, String type, Token startToken,
-			Token endToken) {
+	protected MultiToken(Sentence sentence, String type, Token startToken, Token endToken) {
 		this.sentence = sentence;
 		this.type = type;
 		this.startToken = startToken;

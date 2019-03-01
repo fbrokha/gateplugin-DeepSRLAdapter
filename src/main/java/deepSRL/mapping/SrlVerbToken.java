@@ -3,7 +3,6 @@ package deepSRL.mapping;
 import java.util.ArrayList;
 import java.util.List;
 
-
 public class SrlVerbToken extends MultiToken {
 	private static final long serialVersionUID = 1L;
 

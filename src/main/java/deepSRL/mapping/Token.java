@@ -3,7 +3,6 @@ package deepSRL.mapping;
 import java.util.ArrayList;
 import java.util.List;
 
-
 public class Token extends SimpleMapping {
 	private static final long serialVersionUID = 1L;
 

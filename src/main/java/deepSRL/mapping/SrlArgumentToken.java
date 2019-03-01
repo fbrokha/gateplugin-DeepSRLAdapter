@@ -1,6 +1,5 @@
 package deepSRL.mapping;
 
-
 public class SrlArgumentToken extends MultiToken {
 	private static final long serialVersionUID = 1L;
 
