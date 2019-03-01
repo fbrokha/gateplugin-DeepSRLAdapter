@@ -7,18 +7,19 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 public class DeepSRLBuilder {
 
-	private ExecutorService executor;
+	private static final String UNBUFFERED_OUTPUT = "-u";
+
+	private Map<String, String> env;
 	private File pythonExecutable;
+	private OutputStream outStream = System.out;
+	private OutputStream errorStream = System.err;
+
 	private File deepSRLFile;
 	private File modelFile;
 	private File pidmodelFile;
-	private OutputStream errorStream = System.err;
-	private Map<String, String> env;
 
 	private static enum CommandOption {
 
@@ -56,16 +57,16 @@ public class DeepSRLBuilder {
 		this.pidmodelFile = pidmodelFile;
 	}
 
+	public DeepSRLBuilder withOutputStream(OutputStream outStream) {
+		this.outStream = outStream;
+		return this;
+	}
+
 	public DeepSRLBuilder withErrorStream(OutputStream errorStream) {
 		this.errorStream = errorStream;
 		return this;
 	}
 
-	public DeepSRLBuilder withExecutor(ExecutorService executor) {
-		this.executor = executor;
-		return this;
-	}
-	
 	public DeepSRLBuilder withEnvironment(Map<String, String> env) {
 		this.env = env;
 		return this;
@@ -74,6 +75,7 @@ public class DeepSRLBuilder {
 	public DeepSRL build() throws IOException {
 		List<String> command = new ArrayList<>();
 		command.add(pythonExecutable.getAbsolutePath());
+		command.add(UNBUFFERED_OUTPUT);
 		command.add(deepSRLFile.getAbsolutePath());
 		command.addAll(CommandOption.MODEL.withFile(modelFile).getCommand());
 		command.addAll(CommandOption.PIDMODEL.withFile(pidmodelFile).getCommand());
@@ -83,8 +85,7 @@ public class DeepSRLBuilder {
 		if (this.env != null) {
 			processBuilder.environment().putAll(this.env);
 		}
-		ExecutorService executor = this.executor != null ? this.executor : Executors.newCachedThreadPool();
-		return new DeepSRL(executor, errorStream, processBuilder.start());
+		return new DeepSRL(processBuilder, outStream, errorStream);
 	}
 
 }

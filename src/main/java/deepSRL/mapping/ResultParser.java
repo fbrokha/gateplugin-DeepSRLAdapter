@@ -21,39 +21,22 @@ public class ResultParser {
 	private static final String BACKSLASH = "\\";
 	private static final String EMPTY_STRING = "";
 	private static final String INIT_SUCCESS = "initsuccessful";
-	private static final String WARNING_PREFIX = "WARNING";
 	private static final String COMP_DONE = "computationdone";
 	private static final String EMPTY_SRL = "empty";
 	private static final int SRL_ARGUMENT_TYPE = 0;
 	private static final int SRL_ARG_START = 1;
 	private static final int SRL_ARG_END = 2;
 
-	public static void checkInitialization(InputStream inputStream, InputStream errorStream, PrintStream outErrorStream)
-			throws IOException {
-		BufferedReader inReader = new BufferedReader(new InputStreamReader(inputStream));
-		BufferedReader errorReader = new BufferedReader(new InputStreamReader(errorStream));
+	public static void checkInitialization(InputStream processInputStream, InputStream processErrorStream,
+			PrintStream outStream) throws IOException {
+		BufferedReader inReader = new BufferedReader(new InputStreamReader(processInputStream));
 		String inLine;
-		String errorLine;
-		while (true) {
-			if (errorReader.ready()) {
-				if ((errorLine = errorReader.readLine()) != null) {
-					if (errorLine.startsWith(WARNING_PREFIX)) {
-						outErrorStream.println(errorLine);
-					} else {
-						List<String> errorLines = new ArrayList<>();
-						errorLines.add(errorLine);
-						while ((errorLine = errorReader.readLine()) != null) {
-							errorLines.add(errorLine);
-						}
-						throw new RuntimeException(
-								"gate_deepSRL.py returned Errors. Check parameter setup according to instructions.\n"
-										+ String.join("\n", errorLines));
-					}
-				}
+		while ((inLine = inReader.readLine()) != null) {
+			if (inLine.matches(INIT_SUCCESS)) {
+				break;
 			} else {
-				inLine = inReader.readLine();
-				if (inLine != null && inLine.matches(INIT_SUCCESS)) {
-					break;
+				if (outStream != null) {
+					outStream.println(inLine);
 				}
 			}
 		}

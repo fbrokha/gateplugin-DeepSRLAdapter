@@ -33,6 +33,7 @@ import gate.creole.metadata.CreoleParameter;
 import gate.creole.metadata.CreoleResource;
 import gate.creole.metadata.Optional;
 import gate.creole.metadata.RunTime;
+import gate.util.GateRuntimeException;
 import gate.util.InvalidOffsetException;
 
 /**
@@ -54,6 +55,9 @@ public class DeepSRLAdapter extends AbstractLanguageAnalyser {
 
 	private String environment;
 	private URL pythonExecutable;
+	private Boolean printOutput;
+	private Boolean printError;
+
 	private URL deepSRLScript;
 	private URL modelPath;
 	private URL propidModelPath;
@@ -71,6 +75,8 @@ public class DeepSRLAdapter extends AbstractLanguageAnalyser {
 			DeepSRLBuilder builder = new DeepSRLBuilder(fileFromURL(pythonExecutable), fileFromURL(deepSRLScript),
 					fileFromURL(modelPath), fileFromURL(propidModelPath));
 			builder.withEnvironment(parseEnvironmentString(this.environment));
+			builder.withOutputStream(printOutput ? System.out : null);
+			builder.withErrorStream(printError ? System.err : null);
 			deepSRLprocess = builder.build();
 		} catch (Exception e) {
 			throw new ResourceInstantiationException(e);
@@ -86,9 +92,9 @@ public class DeepSRLAdapter extends AbstractLanguageAnalyser {
 	@Override
 	public void cleanup() {
 		try {
-			deepSRLprocess.shutdownService();
+			deepSRLprocess.close();
 		} catch (IOException e) {
-			e.printStackTrace();
+			throw new GateRuntimeException(e);
 		}
 		super.cleanup();
 	}
@@ -208,14 +214,14 @@ public class DeepSRLAdapter extends AbstractLanguageAnalyser {
 
 	private static Map<String, String> parseEnvironmentString(String string) {
 		Map<String, String> env = new LinkedHashMap<String, String>();
-		
+
 		String pattern = "\\b([^\\s]+)=([^\\s]+)\\b";
 
 		Pattern r = Pattern.compile(pattern);
 		Matcher m = r.matcher(string);
 
 		while (m.find()) {
-		    env.put(m.group(1), m.group(2));
+			env.put(m.group(1), m.group(2));
 		}
 
 		return env;
@@ -238,6 +244,24 @@ public class DeepSRLAdapter extends AbstractLanguageAnalyser {
 
 	public URL getPythonExecutable() throws MalformedURLException {
 		return pythonExecutable;
+	}
+
+	@CreoleParameter(comment = "print startup output of DeepSRL Script to Java System.out", defaultValue = "true")
+	public void setPrintOutput(Boolean printOutput) {
+		this.printOutput = printOutput;
+	}
+
+	public Boolean getPrintOutput() {
+		return printOutput;
+	}
+
+	@CreoleParameter(comment = "print error output of DeepSRL Script to Java System.err", defaultValue = "true")
+	public void setPrintError(Boolean printError) {
+		this.printError = printError;
+	}
+
+	public Boolean getPrintError() {
+		return printError;
 	}
 
 	@CreoleParameter(comment = "DeepSRL Script, name: \"gate_deepSRL.py\"", defaultValue = "")

@@ -1,3 +1,11 @@
+import sys
+import argparse
+import os
+import re
+
+import numpy
+import theano
+
 from neural_srl.shared import *
 from neural_srl.shared.constants import *
 from neural_srl.shared.dictionary import Dictionary
@@ -12,14 +20,6 @@ from neural_srl.shared.tensor_pb2 import *
 from neural_srl.theano.tagger import BiLSTMTaggerModel
 from neural_srl.theano.util import floatX
 
-
-import argparse
-from itertools import izip
-import numpy
-import os
-import sys
-import theano
-import re
 from interactive import load_model
 
 def read_sentence():
@@ -44,15 +44,17 @@ if __name__ == "__main__":
 
   args = parser.parse_args()
   
-  pid_model, pid_data = load_model(args.pidmodel, 'propid')
-  srl_model, srl_data = load_model(args.model, 'srl')
-  transition_params = get_transition_params(srl_data.label_dict.idx2str)
-
-  pid_pred_function = pid_model.get_distribution_function()
-  srl_pred_function = srl_model.get_distribution_function()
+  try:
+    pid_model, pid_data = load_model(args.pidmodel, 'propid')
+    srl_model, srl_data = load_model(args.model, 'srl')
+    transition_params = get_transition_params(srl_data.label_dict.idx2str)
+    
+    pid_pred_function = pid_model.get_distribution_function()
+    srl_pred_function = srl_model.get_distribution_function()
+  except:
+    sys.exit(-1)
 
   print "initsuccessful"
-  sys.stdout.flush()
   
   sentence = read_sentence()
     
@@ -60,7 +62,6 @@ if __name__ == "__main__":
 
     if sentence == "textsend":
       print "computationdone"
-      sys.stdout.flush()
       sentence = read_sentence()
       continue
 
@@ -83,7 +84,6 @@ if __name__ == "__main__":
 
     if len(s1) == 0:
       print "empty"
-      sys.stdout.flush()
       sentence = read_sentence()
       continue
 
@@ -97,5 +97,4 @@ if __name__ == "__main__":
       arguments.append(arg_spans)
 
     print arguments
-    sys.stdout.flush()
     sentence = read_sentence()
