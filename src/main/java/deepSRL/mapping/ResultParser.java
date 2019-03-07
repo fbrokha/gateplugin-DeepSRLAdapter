@@ -4,7 +4,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -20,27 +19,11 @@ public class ResultParser {
 	private static final String CHAR_MARKS = "'";
 	private static final String BACKSLASH = "\\";
 	private static final String EMPTY_STRING = "";
-	private static final String INIT_SUCCESS = "initsuccessful";
 	private static final String COMP_DONE = "computationdone";
 	private static final String EMPTY_SRL = "empty";
 	private static final int SRL_ARGUMENT_TYPE = 0;
 	private static final int SRL_ARG_START = 1;
 	private static final int SRL_ARG_END = 2;
-
-	public static void checkInitialization(InputStream processInputStream, InputStream processErrorStream,
-			PrintStream outStream) throws IOException {
-		BufferedReader inReader = new BufferedReader(new InputStreamReader(processInputStream));
-		String inLine;
-		while ((inLine = inReader.readLine()) != null) {
-			if (inLine.matches(INIT_SUCCESS)) {
-				break;
-			} else {
-				if (outStream != null) {
-					outStream.println(inLine);
-				}
-			}
-		}
-	}
 
 	public static void extractSRL(Document document, InputStream inputStream) throws IOException {
 		int sentenceNumber = 0;
@@ -59,7 +42,6 @@ public class ResultParser {
 				parseSRL(sentence, line);
 				sentenceNumber += 1;
 			} else {
-				reader.close();
 				throw new IllegalStateException(
 						"Number of extracted sentences does not match number of sentences in document");
 			}
