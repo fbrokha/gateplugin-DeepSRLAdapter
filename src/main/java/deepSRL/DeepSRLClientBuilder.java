@@ -21,7 +21,7 @@ public class DeepSRLClientBuilder {
 		InputStream inputStream = socket.getInputStream();
 		return new DeepSRL(outputStream, inputStream) {
 			@Override
-			public synchronized void close() throws IOException {
+			public void close() throws IOException {
 				socket.close();
 				super.close();
 			}

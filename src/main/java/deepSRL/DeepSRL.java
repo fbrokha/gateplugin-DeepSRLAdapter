@@ -43,7 +43,7 @@ public class DeepSRL implements Closeable {
 	}
 
 	@Override
-	public synchronized void close() throws IOException {
+	public void close() throws IOException {
 		outputStream.close();
 		inputStream.close();
 		closed = true;

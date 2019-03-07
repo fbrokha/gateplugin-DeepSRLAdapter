@@ -124,7 +124,7 @@ public class DeepSRLProcessBuilder {
 
 		return new DeepSRL(processOutputStream, processInputStream) {
 			@Override
-			public synchronized void close() throws IOException {
+			public void close() throws IOException {
 				process.destroy();
 				executor.shutdown();
 				super.close();
