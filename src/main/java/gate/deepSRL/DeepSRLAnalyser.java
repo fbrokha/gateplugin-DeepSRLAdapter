@@ -69,6 +69,13 @@ public abstract class DeepSRLAnalyser extends AbstractLanguageAnalyser {
 		try {
 			executeContent(document.getContent(), inputAnnotationSet, outputAnnotationSet);
 		} catch (Exception e) {
+			if (e instanceof IOException) {
+				try {
+					deepSRL.close();
+				} catch (IOException e1) {
+					e.addSuppressed(e1);
+				}
+			}
 			throw new ExecutionException(e);
 		}
 	}
