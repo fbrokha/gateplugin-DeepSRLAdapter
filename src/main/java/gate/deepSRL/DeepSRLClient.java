@@ -1,5 +1,7 @@
 package gate.deepSRL;
 
+import org.apache.log4j.Logger;
+
 import deepSRL.DeepSRLClientBuilder;
 import gate.Resource;
 import gate.creole.ResourceInstantiationException;
@@ -12,6 +14,7 @@ import gate.creole.metadata.CreoleResource;
 @CreoleResource(name = "DeepSRLClient", comment = "Integrate DeepSRL (https://github.com/luheng/deep_srl) as a Processing Resource via TCP Client")
 public class DeepSRLClient extends DeepSRLAnalyser {
 	private static final long serialVersionUID = -4905631708449534282L;
+	private static Logger logger = Logger.getLogger(DeepSRLClient.class);
 
 	private String host;
 	private Integer port;

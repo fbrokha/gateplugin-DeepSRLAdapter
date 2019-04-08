@@ -1,9 +1,5 @@
 import sys
 import argparse
-import os
-import re
-import socket
-import thread
 
 import numpy
 import theano
@@ -25,7 +21,7 @@ from neural_srl.theano.util import floatX
 from interactive import load_model
 
 
-def handle_communication(input, output):
+def handle_communication(input, output, pid_pred_function, srl_pred_function):
   while True:
     sentence = input.readline().rstrip('\n')
     if not sentence:
@@ -34,7 +30,7 @@ def handle_communication(input, output):
     if sentence == "textsend":
       output.write("computationdone\n")
       continue
-
+  
     tokenized_sent = sentence.split()
 
     num_tokens = len(tokenized_sent)
@@ -69,9 +65,13 @@ def handle_communication(input, output):
 
 
 def handle_connection(connection):
+  init_lock.acquire()
+  pid_pred_function = pid_model.get_distribution_function()
+  srl_pred_function = srl_model.get_distribution_function()
+  init_lock.release()
   f = connection.makefile('rw', 0)
   try:
-    handle_communication(f, f)
+    handle_communication(f, f, pid_pred_function, srl_pred_function)
   finally:
     f.close()
     connection.shutdown(socket.SHUT_RDWR)
@@ -79,7 +79,6 @@ def handle_connection(connection):
 
 
 if __name__ == "__main__":
-
   parser = argparse.ArgumentParser(description=__doc__)
   parser.add_argument('--model',
                       type=str,
@@ -108,32 +107,34 @@ if __name__ == "__main__":
                       default=6756,
                       required=False,
                       help='Port to bind TCP Server')
-
   args = parser.parse_args()
   
   try:
     pid_model, pid_data = load_model(args.pidmodel, 'propid')
     srl_model, srl_data = load_model(args.model, 'srl')
     transition_params = get_transition_params(srl_data.label_dict.idx2str)
-    
-    pid_pred_function = pid_model.get_distribution_function()
-    srl_pred_function = srl_model.get_distribution_function()
   except:
     sys.stderr.write("failed to startup deep_srl\n")
+    import traceback
+    traceback.print_exc()
     sys.exit(-1)
 
   if args.server:
+    import socket
+    import thread
+    from threading import Lock
+    init_lock = Lock()
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server_socket.bind((args.host, args.port))
     server_socket.listen(1)
     while True:
       connection, address = server_socket.accept()
-      thread.start_new_thread(handle_connection, (connection,))
+      thread.start_new_thread(handle_connection, (connection, ))
   else:
-    print "initsuccessful"
+    pid_pred_function = pid_model.get_distribution_function()
+    srl_pred_function = srl_model.get_distribution_function()
     try:
-      handle_communication(sys.stdin, sys.stdout)
+      print "initsuccessful"
+      handle_communication(sys.stdin, sys.stdout, pid_pred_function, srl_pred_function)
     except EOFError:
       sys.exit(0)
-  
-  

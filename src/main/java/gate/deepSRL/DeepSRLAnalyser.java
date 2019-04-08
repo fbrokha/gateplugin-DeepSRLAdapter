@@ -5,6 +5,8 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import org.apache.log4j.Logger;
+
 import deepSRL.DeepSRL;
 import deepSRL.mapping.Document;
 import deepSRL.mapping.Sentence;
@@ -27,6 +29,7 @@ import gate.util.InvalidOffsetException;
 
 public abstract class DeepSRLAnalyser extends AbstractLanguageAnalyser {
 	private static final long serialVersionUID = -9182190380538490182L;
+	private static Logger logger = Logger.getLogger(DeepSRLAnalyser.class);
 
 	public static final String ANNOTATION_SRL_NAME = "SRL";
 	public static final String ANNOTATION_SRL_FEATURE_VERB_NAME = "verb";
@@ -39,7 +42,7 @@ public abstract class DeepSRLAnalyser extends AbstractLanguageAnalyser {
 	private String inputTokenType;
 	private String outputASName;
 
-	private DeepSRL deepSRL;
+	protected DeepSRL deepSRL;
 
 	protected void initDeepSRL(DeepSRL deepSRL) {
 		this.deepSRL = deepSRL;
@@ -62,7 +65,6 @@ public abstract class DeepSRLAnalyser extends AbstractLanguageAnalyser {
 
 	@Override
 	public void execute() throws ExecutionException {
-
 		AnnotationSet inputAnnotationSet = document.getAnnotations(inputASName);
 		AnnotationSet outputAnnotationSet = document.getAnnotations(outputASName);
 

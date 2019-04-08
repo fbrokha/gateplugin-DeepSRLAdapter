@@ -9,8 +9,16 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.log4j.Logger;
+
 import deepSRL.DeepSRLProcessBuilder;
+import gate.Factory;
+import gate.Factory.DuplicationContext;
+import gate.Gate;
 import gate.Resource;
+import gate.creole.AbstractResource;
+import gate.creole.CustomDuplication;
+import gate.creole.ResourceData;
 import gate.creole.ResourceInstantiationException;
 import gate.creole.metadata.CreoleParameter;
 import gate.creole.metadata.CreoleResource;
@@ -20,8 +28,9 @@ import gate.creole.metadata.Optional;
  * This class is the implementation of the resource DeepSRLAdapter.
  */
 @CreoleResource(name = "DeepSRLAdapter", comment = "Integrate DeepSRL (https://github.com/luheng/deep_srl) as a Processing Resource via Commandline Process")
-public class DeepSRLAdapter extends DeepSRLAnalyser {
+public class DeepSRLAdapter extends DeepSRLAnalyser implements CustomDuplication {
 	private static final long serialVersionUID = -4219643446126996233L;
+	private static Logger logger = Logger.getLogger(DeepSRLAdapter.class);
 
 	private String environment;
 	private URL pythonExecutable;
@@ -50,6 +59,23 @@ public class DeepSRLAdapter extends DeepSRLAnalyser {
 	@Override
 	public void reInit() throws ResourceInstantiationException {
 		init();
+	}
+
+	@Override
+	public Resource duplicate(DuplicationContext ctx) throws ResourceInstantiationException {
+		ResourceData resourceData = Gate.getCreoleRegister().get(DeepSRLAdapter.class.getCanonicalName());
+		DeepSRLAdapter dulicate = new DeepSRLAdapter();
+
+		dulicate.setName(resourceData.getName() + "_" + Gate.genSym());
+		AbstractResource.setParameterValues(dulicate, getInitParameterValues());
+		AbstractResource.setParameterValues(dulicate, getRuntimeParameterValues());
+		dulicate.setFeatures(Factory.newFeatureMap());
+		dulicate.getFeatures().putAll(getFeatures());
+
+		dulicate.deepSRL = deepSRL;
+
+		resourceData.addInstantiation(dulicate);
+		return dulicate;
 	}
 
 	private static Map<String, String> parseEnvironmentString(String string) {
