@@ -57,11 +57,6 @@ public class DeepSRLAdapter extends DeepSRLAnalyser implements CustomDuplication
 	}
 
 	@Override
-	public void reInit() throws ResourceInstantiationException {
-		init();
-	}
-
-	@Override
 	public Resource duplicate(DuplicationContext ctx) throws ResourceInstantiationException {
 		ResourceData resourceData = Gate.getCreoleRegister().get(DeepSRLAdapter.class.getCanonicalName());
 		DeepSRLAdapter dulicate = new DeepSRLAdapter();

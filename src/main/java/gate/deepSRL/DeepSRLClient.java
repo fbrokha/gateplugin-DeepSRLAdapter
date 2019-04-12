@@ -30,11 +30,6 @@ public class DeepSRLClient extends DeepSRLAnalyser {
 		return this;
 	}
 
-	@Override
-	public void reInit() throws ResourceInstantiationException {
-		init();
-	}
-
 	@CreoleParameter(comment = "Input annotation set name", defaultValue = "localhost")
 	public void setHost(String host) {
 		this.host = host;
