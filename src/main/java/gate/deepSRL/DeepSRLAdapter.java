@@ -59,18 +59,18 @@ public class DeepSRLAdapter extends DeepSRLAnalyser implements CustomDuplication
 	@Override
 	public Resource duplicate(DuplicationContext ctx) throws ResourceInstantiationException {
 		ResourceData resourceData = Gate.getCreoleRegister().get(DeepSRLAdapter.class.getCanonicalName());
-		DeepSRLAdapter dulicate = new DeepSRLAdapter();
+		DeepSRLAdapter duplicate = new DeepSRLAdapter();
 
-		dulicate.setName(resourceData.getName() + "_" + Gate.genSym());
-		AbstractResource.setParameterValues(dulicate, getInitParameterValues());
-		AbstractResource.setParameterValues(dulicate, getRuntimeParameterValues());
-		dulicate.setFeatures(Factory.newFeatureMap());
-		dulicate.getFeatures().putAll(getFeatures());
+		duplicate.setName(resourceData.getName() + "_" + Gate.genSym());
+		AbstractResource.setParameterValues(duplicate, getInitParameterValues());
+		AbstractResource.setParameterValues(duplicate, getRuntimeParameterValues());
+		duplicate.setFeatures(Factory.newFeatureMap());
+		duplicate.getFeatures().putAll(getFeatures());
 
-		dulicate.deepSRL = deepSRL;
+		duplicate.deepSRL = deepSRL;
 
-		resourceData.addInstantiation(dulicate);
-		return dulicate;
+		resourceData.addInstantiation(duplicate);
+		return duplicate;
 	}
 
 	private static Map<String, String> parseEnvironmentString(String string) {
