@@ -8,8 +8,6 @@ public abstract class SimpleMapping implements Mapping {
 	protected Integer documentEnd;
 
 	protected Document deepSRLDocument;
-	protected Integer deepSRLStart;
-	protected Integer deepSRLEnd;
 
 	protected SimpleMapping(Document document) {
 		this.deepSRLDocument = document;
@@ -33,26 +31,6 @@ public abstract class SimpleMapping implements Mapping {
 	@Override
 	public String getDocumentText() {
 		return deepSRLDocument.documentText.substring(documentStart, documentEnd);
-	}
-
-	@Override
-	public Document getDeepSRLDocument() {
-		return deepSRLDocument;
-	}
-
-	@Override
-	public Integer getDeepSRLStart() {
-		return deepSRLStart;
-	}
-
-	@Override
-	public Integer getDeepSRLEnd() {
-		return deepSRLEnd;
-	}
-
-	@Override
-	public String getDeepSRLText() {
-		return deepSRLDocument.deepSRLText.substring(deepSRLStart, deepSRLEnd);
 	}
 
 }

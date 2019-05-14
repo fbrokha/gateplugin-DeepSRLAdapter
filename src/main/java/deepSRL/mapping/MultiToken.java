@@ -38,24 +38,8 @@ public class MultiToken implements Mapping {
 		return sentence.deepSRLDocument.documentText.substring(startToken.documentStart, endToken.documentEnd);
 	}
 
-	@Override
-	public Document getDeepSRLDocument() {
-		return sentence.deepSRLDocument;
-	}
-
-	@Override
-	public Integer getDeepSRLStart() {
-		return startToken.getDeepSRLStart();
-	}
-
-	@Override
-	public Integer getDeepSRLEnd() {
-		return endToken.getDeepSRLEnd();
-	}
-
-	@Override
-	public String getDeepSRLText() {
-		return sentence.deepSRLDocument.deepSRLText.substring(startToken.deepSRLStart, endToken.deepSRLEnd);
+	public Sentence getSentence() {
+		return sentence;
 	}
 
 }

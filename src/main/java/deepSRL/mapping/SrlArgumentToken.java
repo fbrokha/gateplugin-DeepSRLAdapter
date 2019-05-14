@@ -3,7 +3,7 @@ package deepSRL.mapping;
 public class SrlArgumentToken extends MultiToken {
 	private static final long serialVersionUID = 1L;
 
-	protected SrlVerbToken verbToken;
+	protected SrlPredicateToken predicateToken;
 
 	protected SrlArgumentToken(Sentence sentence, String type, Token startToken, Token endToken) {
 		super(sentence, type, startToken, endToken);
@@ -14,8 +14,8 @@ public class SrlArgumentToken extends MultiToken {
 		return type;
 	}
 
-	public SrlVerbToken getVerb() {
-		return verbToken;
+	public SrlPredicateToken getVerb() {
+		return predicateToken;
 	}
 
 }

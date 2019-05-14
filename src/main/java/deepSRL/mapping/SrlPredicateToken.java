@@ -3,13 +3,19 @@ package deepSRL.mapping;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SrlVerbToken extends MultiToken {
+public class SrlPredicateToken extends Token {
 	private static final long serialVersionUID = 1L;
 
+	protected Token token;
 	protected List<SrlArgumentToken> arguments = new ArrayList<>();
 
-	protected SrlVerbToken(Sentence sentence, String type, Token startToken, Token endToken) {
-		super(sentence, type, startToken, endToken);
+	protected SrlPredicateToken(Sentence sentence, Token token) {
+		super(sentence, token.documentStart, token.documentEnd);
+		this.token = token;
+	}
+
+	public Token getToken() {
+		return token;
 	}
 
 	public List<SrlArgumentToken> getArguments() {
@@ -19,7 +25,7 @@ public class SrlVerbToken extends MultiToken {
 	protected void addArguments(List<SrlArgumentToken> arguments) {
 		this.arguments.addAll(arguments);
 		for (SrlArgumentToken argument : arguments) {
-			argument.verbToken = this;
+			argument.predicateToken = this;
 		}
 	}
 

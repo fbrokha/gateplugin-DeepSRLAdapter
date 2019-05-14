@@ -10,12 +10,4 @@ public interface Mapping extends Serializable {
 
 	String getDocumentText();
 
-	Document getDeepSRLDocument();
-
-	Integer getDeepSRLStart();
-
-	Integer getDeepSRLEnd();
-
-	String getDeepSRLText();
-
 }

@@ -11,7 +11,7 @@ import deepSRL.DeepSRL;
 import deepSRL.mapping.Document;
 import deepSRL.mapping.Sentence;
 import deepSRL.mapping.SrlArgumentToken;
-import deepSRL.mapping.SrlVerbToken;
+import deepSRL.mapping.SrlPredicateToken;
 import deepSRL.mapping.Token;
 import gate.Annotation;
 import gate.AnnotationSet;
@@ -31,10 +31,10 @@ public abstract class DeepSRLAnalyser extends AbstractLanguageAnalyser {
 	private static final long serialVersionUID = -9182190380538490182L;
 	private static Logger logger = Logger.getLogger(DeepSRLAnalyser.class);
 
-	public static final String ANNOTATION_SRL_NAME = "SRL";
-	public static final String ANNOTATION_SRL_FEATURE_VERB_NAME = "verb";
-	public static final String ANNOTATION_SRL_FEATURE_TYPE_NAME = "type";
-	public static final String ANNOTATION_SRL_FEATURE_ARGUMENT_JOIN = " [...] ";
+	public static final String ANNOTATION_TYPE_PREDICATE = "predicate";
+	public static final String ANNOTATION_TYPE_ARGUMENT = "argument";
+	public static final String FEATURE_ARGUMENT_TYPE = "type";
+	public static final String FEATURE_ARGUMENT_PREDICATE = "predicateId";
 	public static final String RELATION_SRL_NAME = "SRL";
 
 	private String inputASName;
@@ -136,38 +136,25 @@ public abstract class DeepSRLAnalyser extends AbstractLanguageAnalyser {
 	protected void addSrlAnnotations(Long documentOffset, Document document, AnnotationSet outputAnnotationSet)
 			throws InvalidOffsetException {
 		for (Sentence sentence : document.getSentences()) {
-			for (SrlVerbToken verb : sentence.getSrlVerbs()) {
+			for (SrlPredicateToken predicateToken : sentence.getSrlPredicates()) {
+
+				FeatureMap predicateFeatures = Factory.newFeatureMap();
+				Integer predicateId = outputAnnotationSet.add(documentOffset + predicateToken.getDocumentStart(),
+						documentOffset + predicateToken.getDocumentEnd(), ANNOTATION_TYPE_PREDICATE, predicateFeatures);
+
 				List<Integer> relationIds = new ArrayList<>();
-
-				DocumentContent verbText = this.document.getContent()
-						.getContent(documentOffset + verb.getDocumentStart(), documentOffset + verb.getDocumentEnd());
-
-				FeatureMap verbFeatures = Factory.newFeatureMap();
-				verbFeatures.put(ANNOTATION_SRL_FEATURE_TYPE_NAME, verb.getType());
-				verbFeatures.put(ANNOTATION_SRL_FEATURE_VERB_NAME, verbText);
-
-				for (SrlArgumentToken argument : verb.getArguments()) {
-					DocumentContent argumentText = this.document.getContent().getContent(
-							documentOffset + argument.getDocumentStart(), documentOffset + argument.getDocumentEnd());
-
-					if (verbFeatures.get(argument.getType()) != null) {
-						verbFeatures.put(argument.getType(), verbFeatures.get(argument.getType())
-								+ ANNOTATION_SRL_FEATURE_ARGUMENT_JOIN + argumentText);
-					} else {
-						verbFeatures.put(argument.getType(), argumentText);
-					}
-					FeatureMap features = Factory.newFeatureMap();
-					features.put(ANNOTATION_SRL_FEATURE_TYPE_NAME, argument.getType());
-					features.put(ANNOTATION_SRL_FEATURE_VERB_NAME, verbText);
-					Integer argumentId = outputAnnotationSet.add(documentOffset + argument.getDocumentStart(),
-							documentOffset + argument.getDocumentEnd(), ANNOTATION_SRL_NAME, features);
+				for (SrlArgumentToken argumentToken : predicateToken.getArguments()) {
+					FeatureMap argumentFeatures = Factory.newFeatureMap();
+					argumentFeatures.put(FEATURE_ARGUMENT_TYPE, argumentToken.getType());
+					argumentFeatures.put(FEATURE_ARGUMENT_PREDICATE, predicateId);
+					Integer argumentId = outputAnnotationSet.add(documentOffset + argumentToken.getDocumentStart(),
+							documentOffset + argumentToken.getDocumentEnd(), ANNOTATION_TYPE_ARGUMENT,
+							argumentFeatures);
 					relationIds.add(argumentId);
 				}
 
-				Integer verbId = outputAnnotationSet.add(documentOffset + verb.getDocumentStart(),
-						documentOffset + verb.getDocumentEnd(), ANNOTATION_SRL_NAME, verbFeatures);
 				if (!relationIds.isEmpty()) {
-					relationIds.add(0, verbId);
+					relationIds.add(0, predicateId);
 					outputAnnotationSet.getRelations().addRelation(RELATION_SRL_NAME, toIntArray(relationIds));
 				}
 			}

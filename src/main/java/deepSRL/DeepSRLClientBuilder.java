@@ -20,6 +20,12 @@ public class DeepSRLClientBuilder {
 		OutputStream outputStream = socket.getOutputStream();
 		InputStream inputStream = socket.getInputStream();
 		return new DeepSRL(outputStream, inputStream) {
+
+			@Override
+			public boolean isClosed() {
+				return socket.isClosed();
+			}
+
 			@Override
 			public void close() throws IOException {
 				socket.close();

@@ -8,8 +8,6 @@ public class Document extends SimpleMapping {
 	protected String documentText;
 	protected List<Sentence> sentences;
 
-	protected String deepSRLText;
-
 	public Document(String documentText, List<Sentence> sentences) {
 		this(documentText);
 		setSentences(sentences);
@@ -34,8 +32,6 @@ public class Document extends SimpleMapping {
 				token.deepSRLDocument = this;
 			}
 		}
-
-		DocumentBuilder.calculateDeepSRLTextAndOffsets(this);
 	}
 
 	public List<Sentence> getSentences() {
@@ -45,17 +41,6 @@ public class Document extends SimpleMapping {
 	@Override
 	public String getDocumentText() {
 		return documentText;
-	}
-
-	@Override
-	public String getDeepSRLText() {
-		return deepSRLText;
-	}
-
-	protected void setDeepSRLText(String deepSRLText) {
-		this.deepSRLText = deepSRLText;
-		this.deepSRLStart = 0;
-		this.deepSRLEnd = deepSRLText.length();
 	}
 
 }
