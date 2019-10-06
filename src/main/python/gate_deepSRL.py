@@ -42,21 +42,32 @@ def handle_communication(input, output, pid_pred_function, srl_pred_function):
     result = []
   
     for sentence in document:
-      num_tokens = len(sentence)
-      s0 = string_sequence_to_ids(sentence, pid_data.word_dict, True)
-      l0 = [0 for _ in s0]
-      x, _, _, weights = pid_data.get_test_data([(s0, l0)], batch_size=None)
-      pid_pred, scores0 = pid_pred_function(x, weights)
-    
-      s1_sent = string_sequence_to_ids(sentence, srl_data.word_dict, True)
-      s1 = []
-      predicates = []
-      for i, p in enumerate(pid_pred[0]):
-        if pid_data.label_dict.idx2str[p] == 'V':
-          predicates.append(i)
+      tokens = sentence['tokens']
+      num_tokens = len(tokens)
+      
+      s1_sent = string_sequence_to_ids(tokens, srl_data.word_dict, True)
+      
+      if 'verbs' in sentence:
+        s1 = []
+        predicates = sentence['verbs']
+        l0 = [0 for _ in s1_sent]
+        for i in predicates:
           feats = [1 if j == i else 0 for j in range(num_tokens)]
           s1.append((s1_sent, feats, l0))
-    
+      else:
+        s0 = string_sequence_to_ids(tokens, pid_data.word_dict, True)
+        l0 = [0 for _ in s0]
+        x, _, _, weights = pid_data.get_test_data([(s0, l0)], batch_size=None)
+        pid_pred, _ = pid_pred_function(x, weights)
+        
+        s1 = []
+        predicates = []
+        for i, p in enumerate(pid_pred[0]):
+          if pid_data.label_dict.idx2str[p] == 'V':
+            predicates.append(i)
+            feats = [1 if j == i else 0 for j in range(num_tokens)]
+            s1.append((s1_sent, feats, l0))
+      
       if len(s1) == 0:
         result.append([])
         continue
@@ -89,7 +100,7 @@ def handle_communication(input, output, pid_pred_function, srl_pred_function):
 
 def handle_connection(connection):
   init_lock.acquire()
-  pid_pred_function = pid_model.get_distribution_function()
+  pid_pred_function = pid_model.get_distribution_function() if pid_model is not None else None
   srl_pred_function = srl_model.get_distribution_function()
   init_lock.release()
   f = connection.makefile('rw', 0)
@@ -112,6 +123,7 @@ if __name__ == "__main__":
   parser.add_argument('--pidmodel',
                       type=str,
                       default='',
+                      required=False,
                       help='Predicate identfication model path.')
   
   parser.add_argument('--server',
@@ -133,7 +145,7 @@ if __name__ == "__main__":
   args = parser.parse_args()
   
   try:
-    pid_model, pid_data = load_model(args.pidmodel, 'propid')
+    pid_model, pid_data = load_model(args.pidmodel, 'propid') if args.pidmodel else (None, None)
     srl_model, srl_data = load_model(args.model, 'srl')
     transition_params = get_transition_params(srl_data.label_dict.idx2str)
   except:
@@ -154,7 +166,7 @@ if __name__ == "__main__":
       connection, address = server_socket.accept()
       thread.start_new_thread(handle_connection, (connection, ))
   else:
-    pid_pred_function = pid_model.get_distribution_function()
+    pid_pred_function = pid_model.get_distribution_function() if pid_model is not None else None
     srl_pred_function = srl_model.get_distribution_function()
     try:
       print "initsuccessful"

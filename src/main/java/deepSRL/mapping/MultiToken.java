@@ -1,16 +1,12 @@
 package deepSRL.mapping;
 
-public class MultiToken implements Mapping {
+public abstract class MultiToken implements Mapping {
 	private static final long serialVersionUID = 1L;
 
-	protected Sentence sentence;
-	protected String type;
-	protected Token startToken;
-	protected Token endToken;
-
-	protected MultiToken(Sentence sentence, String type, Token startToken) {
-		this(sentence, type, startToken, null);
-	}
+	protected final Sentence sentence;
+	protected final String type;
+	protected final Token startToken;
+	protected final Token endToken;
 
 	protected MultiToken(Sentence sentence, String type, Token startToken, Token endToken) {
 		this.sentence = sentence;
@@ -35,7 +31,7 @@ public class MultiToken implements Mapping {
 
 	@Override
 	public String getDocumentText() {
-		return sentence.deepSRLDocument.documentText.substring(startToken.documentStart, endToken.documentEnd);
+		return sentence.document.documentText.substring(startToken.documentStart, endToken.documentEnd);
 	}
 
 	public Sentence getSentence() {

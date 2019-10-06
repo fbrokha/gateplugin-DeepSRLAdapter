@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -28,23 +29,37 @@ public class Parser {
 	}
 
 	public static boolean writeDocument(OutputStream outputStream, Document document) throws IOException {
-		List<List<String>> value = new ArrayList<>();
+		List<Map<String, Object>> request = new ArrayList<>();
+
 		for (Sentence sentence : document.getSentences()) {
-			List<String> sentenceValue = new ArrayList<>();
+			Map<String, Object> sentenceValues = new LinkedHashMap<>();
+			List<String> tokens = new ArrayList<>();
 			for (Token token : sentence.getTokens()) {
 				String tokenText = token.getDocumentText();
 				if (tokenText.length() > 0) {
-					sentenceValue.add(tokenText);
+					tokens.add(tokenText);
 				}
 			}
-			if (!sentenceValue.isEmpty()) {
-				value.add(sentenceValue);
+			if (!tokens.isEmpty()) {
+				sentenceValues.put("tokens", tokens);
+				if (sentence.isPredefinedVerbs()) {
+					List<Integer> predefinedVerbIndexes = new ArrayList<>();
+					for (int i = 0; i < sentence.getTokens().size(); i++) {
+						if (sentence.getTokens().get(i).isPredefinedVerb()) {
+							predefinedVerbIndexes.add(i);
+						}
+					}
+					sentenceValues.put("verbs", predefinedVerbIndexes);
+				}
+			}
+			if (!sentenceValues.isEmpty()) {
+				request.add(sentenceValues);
 			}
 		}
-		if (value.isEmpty()) {
+		if (request.isEmpty()) {
 			return false;
 		}
-		MAPPER.writeValue(outputStream, value);
+		MAPPER.writeValue(outputStream, request);
 		outputStream.write('\n');
 		outputStream.flush();
 		return true;

@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
 
@@ -40,6 +41,8 @@ public abstract class DeepSRLAnalyser extends AbstractLanguageAnalyser {
 	private String inputASName;
 	private String inputSentenceType;
 	private String inputTokenType;
+	private Object verbFeatureKey;
+	private Set<Object> verbFeatureValues;
 	private String outputASName;
 
 	protected DeepSRL deepSRL;
@@ -89,6 +92,8 @@ public abstract class DeepSRLAnalyser extends AbstractLanguageAnalyser {
 		Long documentOffset = 0l;
 		Long lastSentenceEnd = 0l;
 
+		boolean predefinedVerbs = verbFeatureKey != null && verbFeatureValues != null && !verbFeatureValues.isEmpty();
+
 		AnnotationSet annotationSet = inputAnnotationSet.get(inputSentenceType);
 		for (Annotation sentenceAnnotation : annotationSet.inDocumentOrder()) {
 			Long sentenceStart = sentenceAnnotation.getStartNode().getOffset();
@@ -98,8 +103,9 @@ public abstract class DeepSRLAnalyser extends AbstractLanguageAnalyser {
 			int documentEnd = (int) (sentenceEnd - documentOffset);
 			Sentence sentence;
 
-			List<Token> tokens = buildTokens(documentOffset, inputAnnotationSet, sentenceStart, sentenceEnd);
-			sentence = new Sentence(sentenceAnnotation.getId(), documentStart, documentEnd, tokens);
+			List<Token> tokens = buildTokens(documentOffset, inputAnnotationSet, sentenceStart, sentenceEnd,
+					predefinedVerbs);
+			sentence = new Sentence(sentenceAnnotation.getId(), documentStart, documentEnd, tokens, predefinedVerbs);
 
 			sentences.add(sentence);
 			lastSentenceEnd = sentenceEnd;
@@ -119,7 +125,7 @@ public abstract class DeepSRLAnalyser extends AbstractLanguageAnalyser {
 	}
 
 	private List<Token> buildTokens(Long documentOffset, AnnotationSet inputAnnotationSet, Long sentenceStart,
-			Long sentenceEnd) throws InvalidOffsetException {
+			Long sentenceEnd, boolean predefinedVerbs) throws InvalidOffsetException {
 		List<Token> tokens = new ArrayList<>();
 		AnnotationSet inputTokenSet = inputAnnotationSet.get(inputTokenType, sentenceStart, sentenceEnd);
 		Iterator<Annotation> tokenAnnotationIterator = inputTokenSet.iterator();
@@ -127,8 +133,12 @@ public abstract class DeepSRLAnalyser extends AbstractLanguageAnalyser {
 			Annotation tokenAnnotation = tokenAnnotationIterator.next();
 			Long tokenStart = tokenAnnotation.getStartNode().getOffset();
 			Long tokenEnd = tokenAnnotation.getEndNode().getOffset();
+			boolean predefinedVerb = false;
+			if (predefinedVerbs) {
+				predefinedVerb = verbFeatureValues.contains(tokenAnnotation.getFeatures().get(verbFeatureKey));
+			}
 			tokens.add(new Token(tokenAnnotation.getId(), (int) (tokenStart - documentOffset),
-					(int) (tokenEnd - documentOffset)));
+					(int) (tokenEnd - documentOffset), predefinedVerb));
 		}
 		return tokens;
 	}
@@ -209,6 +219,26 @@ public abstract class DeepSRLAnalyser extends AbstractLanguageAnalyser {
 
 	public String getInputTokenType() {
 		return inputTokenType;
+	}
+
+	@RunTime
+	@CreoleParameter(comment = "Feature name for tokens, which are predefined as verbs (if not set, DeepSRL determines verbs using pidmodel)")
+	public void setVerbFeatureKey(Object verbFeatureKey) {
+		this.verbFeatureKey = verbFeatureKey;
+	}
+
+	public Object getVerbFeatureKey() {
+		return verbFeatureKey;
+	}
+
+	@RunTime
+	@CreoleParameter(comment = "Feature values for tokens, which are predefined as verbs (if not set or empty, DeepSRL determines verbs using pidmodel)")
+	public void setVerbFeatureValues(Set<Object> verbFeatureValues) {
+		this.verbFeatureValues = verbFeatureValues;
+	}
+
+	public Set<Object> getVerbFeatureValues() {
+		return verbFeatureValues;
 	}
 
 }

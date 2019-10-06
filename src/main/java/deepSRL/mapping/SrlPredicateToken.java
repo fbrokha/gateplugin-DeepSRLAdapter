@@ -3,14 +3,15 @@ package deepSRL.mapping;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SrlPredicateToken extends Token {
+public class SrlPredicateToken extends SingleToken {
 	private static final long serialVersionUID = 1L;
 
 	protected Token token;
 	protected List<SrlArgumentToken> arguments = new ArrayList<>();
 
 	protected SrlPredicateToken(Sentence sentence, Token token) {
-		super(sentence, token.documentStart, token.documentEnd);
+		super(token.documentId, token.documentStart, token.documentEnd, sentence.document);
+		this.sentence = sentence;
 		this.token = token;
 	}
 

@@ -3,14 +3,21 @@ package deepSRL.mapping;
 public abstract class SimpleMapping implements Mapping {
 	private static final long serialVersionUID = 1L;
 
-	protected Object documentId;
-	protected Integer documentStart;
-	protected Integer documentEnd;
+	protected final Object documentId;
+	protected final Integer documentStart;
+	protected final Integer documentEnd;
 
-	protected Document deepSRLDocument;
+	protected Document document;
 
-	protected SimpleMapping(Document document) {
-		this.deepSRLDocument = document;
+	protected SimpleMapping(Object documentId, Integer documentStart, Integer documentEnd) {
+		this(documentId, documentStart, documentEnd, null);
+	}
+
+	protected SimpleMapping(Object documentId, Integer documentStart, Integer documentEnd, Document document) {
+		this.documentId = documentId;
+		this.documentStart = documentStart;
+		this.documentEnd = documentEnd;
+		this.document = document;
 	}
 
 	@SuppressWarnings("unchecked")
@@ -30,7 +37,7 @@ public abstract class SimpleMapping implements Mapping {
 
 	@Override
 	public String getDocumentText() {
-		return deepSRLDocument.documentText.substring(documentStart, documentEnd);
+		return document.documentText.substring(documentStart, documentEnd);
 	}
 
 }
