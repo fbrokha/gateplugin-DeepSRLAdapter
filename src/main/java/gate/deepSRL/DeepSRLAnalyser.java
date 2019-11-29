@@ -221,6 +221,7 @@ public abstract class DeepSRLAnalyser extends AbstractLanguageAnalyser {
 		return inputTokenType;
 	}
 
+	@Optional
 	@RunTime
 	@CreoleParameter(comment = "Feature name for tokens, which are predefined as verbs (if not set, DeepSRL determines verbs using pidmodel)")
 	public void setVerbFeatureKey(Object verbFeatureKey) {
@@ -231,6 +232,7 @@ public abstract class DeepSRLAnalyser extends AbstractLanguageAnalyser {
 		return verbFeatureKey;
 	}
 
+	@Optional
 	@RunTime
 	@CreoleParameter(comment = "Feature values for tokens, which are predefined as verbs (if not set or empty, DeepSRL determines verbs using pidmodel)")
 	public void setVerbFeatureValues(Set<Object> verbFeatureValues) {
