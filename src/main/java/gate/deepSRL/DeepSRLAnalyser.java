@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.apache.log4j.Logger;
 
@@ -96,10 +95,7 @@ public abstract class DeepSRLAnalyser extends AbstractLanguageAnalyser {
 		boolean predefinedVerbs = verbFeatureKey != null && verbFeatureValues != null && !verbFeatureValues.isEmpty();
 
 		AnnotationSet annotationSet = inputAnnotationSet.get(inputSentenceType);
-		List<Annotation> orderedAnnotations = annotationSet.stream()
-				.sorted((a1, a2) -> Long.compare(a1.getStartNode().getOffset(), a2.getStartNode().getOffset()))
-				.collect(Collectors.toList());
-		for (Annotation sentenceAnnotation : orderedAnnotations) {
+		for (Annotation sentenceAnnotation : annotationSet.inDocumentOrder()) {
 			Long sentenceStart = sentenceAnnotation.getStartNode().getOffset();
 			Long sentenceEnd = sentenceAnnotation.getEndNode().getOffset();
 
